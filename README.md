@@ -134,5 +134,5 @@ python main.py --mode eval
 
 ## 📧 Contact
 
-Project by Kaushik & GPT-4o. Based on ShieldNN by Yasser Shoukry.
+Project by Kaushik. Based on ShieldNN by Yasser Shoukry's ShieldNN
 
