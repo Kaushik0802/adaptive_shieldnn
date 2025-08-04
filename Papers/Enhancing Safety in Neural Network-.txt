@@ -1,0 +1,209 @@
+Enhancing Safety in Neural Network-Based Control: Addressing Limitations in ShieldNN
+
+1. Research Topic  
+Ensuring the safety of reinforcement learning (RL)-based controllers is a critical challenge in deploying AI-driven autonomous systems. ShieldNN, a neural network (NN)-based safety filter, has emerged as a promising method for preventing unsafe actions in RL. However, its reliance on learned models introduces several limitations, including generalization issues, lack of formal safety guarantees, false positives, computational overhead, and dependency on training data quality. This research aims to enhance ShieldNN by integrating formal verification, adaptive mechanisms, and robust dataset augmentation to improve safety and reliability.
+
+2. Intellectual Merit  
+This work contributes to the field of safe RL by:  
+- Developing hybrid safety mechanisms that combine NN-based learning with formal verification techniques, ensuring provable safety without compromising adaptability.  
+- Implementing uncertainty-aware interventions to minimize overly conservative behavior while maintaining high safety standards.  
+- Enhancing computational efficiency through model pruning, caching mechanisms, and quantization to make real-time deployment feasible.  
+- Improving dataset robustness through active learning, human-in-the-loop verification, and synthetic data augmentation for better generalization.  
+These advancements will provide a more practical and scalable solution for safe RL applications in robotics, autonomous driving, and industrial automation.
+
+3. Possible Challenges and Backup Plans  
+- Challenge: Limited generalization to unseen scenarios  
+  *Backup Plan:* Introduce domain randomization and adversarial training to expose the NN-based shield to diverse failure cases. Implement online learning for continuous improvement.
+  
+- Challenge: Lack of formal safety guarantees  
+  *Backup Plan:* Incorporate a lightweight formal safety verification layer to serve as a fallback mechanism when the NN-based filter's confidence is low.
+  
+- Challenge: High false positives (overly conservative behavior)  
+  *Backup Plan:* Develop adaptive confidence thresholds and reinforcement learning-based reward shaping to balance safety and performance.
+  
+- Challenge: Computational overhead in training and verification  
+  *Backup Plan:* Utilize model compression, low-rank approximations, and precomputed safety decisions to optimize runtime efficiency.
+  
+- Challenge: Dependency on training data quality  
+  *Backup Plan:* Employ active learning and human-in-the-loop verification to iteratively refine the dataset and ensure coverage of edge cases.
+
+
+Milestones
+The percentage denotes the expected workload of the whole project.
+Milestone 1(Spring, 20%):  
+Deliverable: A sound technical report. It should address all the major concerns with detailed affirmative answers (with supporting evidence, such as experiments). The questions are
+1.	How much faster than learning CBF at the same performance level?
+2.	Can the margin function \delta(x) be simplified by using the intrinsic structure? 
+The vanilla case is that  \delta(x) is state-dependent, i.e., it needs to be estimated for different states. Can we leverage the structure of x to simplify it?
+3.	For the fuzzy-margin, what is the connection with neuro-symbolic rules?
+4.	Is the success caused by some other reasons, such as parameter tuning, or is the domain too easy? Show ablation experiments.
+5.	In what cases does this method fail?
+
+Milestone 2 (Summer, 45%): 
+Deliverable: A preliminary submission draft. There should be no major weakness, both in theory and experiment. Conduct in-house mock reviews and external mock reviews (I will ask external reviewers to do so). 
+
+Milestone 3 (Fall, 35%): Make revisions based on mock reviews. Strengthen the paper’s experiment soundess, theoretical depth and others.
+Deliverable: A complete, well-written submission. Finalize the paper, wrap up, and submit before 12/15.
+
+
+
+
+Technical details
+Here are several novel yet intuitive methods for improving robustness of CBFs under inaccurate modeling conditions, coherent with CBF, strongly related to reinforcement learning (RL), and intentionally avoiding overly complex mathematics. The core idea is to introduce a Robust Margin \delta:
+Add a conservative term into the standard Control Barrier Function (CBF) constraint to handle uncertainties due to modeling errors. The modified constraint becomes:
+\dot{h}(x,u) + \alpha(h(x)) \geq \delta(x)  
+where \delta > 0 is a robust margin specifically introduced to mitigate uncertainties arising from inaccuracies in the system model.
+ 
+________________________________________
+🚩 Method 1: RL-Guided CBF Margin Adjustment (RLCBF-MA)
+Core idea:
+Use reinforcement learning to dynamically adjust the safety margin of the existing CBF, based on real-time feedback from the environment.
+Details:
+	•	Start with an initial conservative CBF constraint:
+\nabla h(x)^T(f(x)+g(x)u)+\alpha(h(x))\geq \delta
+ 
+where m is a safety margin parameter.
+	•	Train a simple RL agent (small neural network or tabular RL) to adjust m based on observed state transitions and safety violations.
+	•	The RL agent receives reward/penalty signals: positive for efficient progress and negative if close to constraint violation.
+	•	The agent learns to increase m when uncertainty is high (frequent violations), and decrease when safety margin seems overly conservative (hindering performance).
+Novelty & Benefits:
+	•	Naturally integrates RL into existing CBF framework.
+	•	Easy to implement, intuitive adaptation strategy.
+
+________________________________________
+🚩 Method 2: Experience-Replay Enhanced CBF (ER-CBF)
+Core idea:
+Use RL-inspired experience replay memory to continuously refine and correct CBF conditions based on actual observed system behavior, compensating model inaccuracies.
+Details:
+	•	Maintain a replay buffer of past state-action-safety violation tuples (x,u,safe).
+	•	Periodically (offline), analyze replay buffer to identify states frequently causing violations.
+	•	Adjust CBF parameters or margins accordingly based on statistical analysis from replay data.
+	•	By continuously learning from real experiences, the CBF adapts to correct modeling errors and unforeseen scenarios.
+Novelty & Benefits:
+	•	Directly inspired by RL’s successful experience replay technique.
+	•	Intuitive statistical adaptation, no complex math required.
+________________________________________
+🚩 Method 3: Fuzzy Logic-Augmented CBF (FL-CBF)
+CBF constraint with fuzzy logic safety margin:
+	•	Standard constraint form:
+\nabla h(x)^T(f(x)+g(x)u)+\alpha(h(x)) \geq m_{\text{fuzzy}}(x) 
+	•	Fuzzy logic rule example (linguistic form):
+	•	IF “state uncertainty” is HIGH, THEN “margin” is LARGE.
+	•	IF “near violation boundary” is TRUE, THEN “margin” is MEDIUM.
+	•	Mathematically, fuzzy inference:
+m_{\text{fuzzy}}(x) = \frac{\sum_{j} w_j(x) \cdot m_j}{\sum_j w_j(x)}
+ 
+	•	where w_j(x) are fuzzy membership weights (0-1) calculated based on state conditions,
+	•	m_j are predefined margin values associated with linguistic rules.
+(This uses fuzzy membership functions instead of heavy optimization.)
+
+These methods are novel, directly leverage RL principles, intuitively integrate with CBF frameworks, and deliberately avoid overly complex mathematical procedures, thereby being highly suitable for practical implementation and experimentation.
+
+Existing work on margin-based CBF methods
+Control Barrier Functions (CBFs) are instrumental in ensuring safety in control systems by maintaining system states within predefined safe sets. However, their effectiveness can be compromised by modeling inaccuracies and external disturbances. To address this, researchers have introduced robust margin methods that incorporate conservative terms into CBF constraints to counteract uncertainties. This document provides an overview of the current state-of-the-art in enhancing CBF robustness through margin methods, identifies existing challenges, and highlights influential papers in this domain.
+1. Is this problem well resolved? What are its remaining challenges? And why?
+While significant progress has been made in developing robust CBFs with margin methods, several challenges persist:
+	•	Balancing Safety and Performance: Introducing conservative margins can ensure safety but may lead to overly cautious behavior, reducing system performance. Achieving an optimal balance remains challenging.
+	•	Adaptive Margin Tuning: Static margins may not be effective across all operating conditions. Developing adaptive methods that adjust margins in real-time based on system dynamics and environmental factors is complex.
+	•	Computational Efficiency: Ensuring that robust CBFs with margins can be computed in real-time for high-dimensional systems without excessive computational overhead is an ongoing concern.
+	•	Handling Nonlinear and Time-Varying Uncertainties: Many existing methods assume linear or time-invariant uncertainties. Extending robust CBFs to handle nonlinear and time-varying uncertainties effectively is still under active research.
+2. What are existing methods? What are their shortcomings?
+Existing methods to enhance CBF robustness using margin techniques include:
+	•	Fixed Robust Margins: Incorporating a constant conservative term into the CBF constraint to account for uncertainties.
+	•	Shortcoming: May be overly conservative, leading to degraded performance, and may not adapt well to varying uncertainty levels.
+	•	Adaptive Robust Margins: Adjusting the margin based on real-time uncertainty estimation or system performance metrics.
+	•	Shortcoming: Requires accurate and timely estimation of uncertainties, which can be challenging in dynamic environments.
+	•	Learning-Based Approaches: Utilizing data-driven methods to learn optimal margins from expert demonstrations or historical data.
+	•	Shortcoming: May not generalize well to unseen scenarios and can be data-intensive.
+	•	High-Order CBFs (HOCBFs): Extending CBFs to higher-order derivatives to handle systems with higher relative degrees.
+	•	Shortcoming: Increases computational complexity and may require more detailed system knowledge.
+3. List the top five most influential papers on this topic in the past five years and summarize them briefly.
+The following table summarizes five influential papers from the past five years that have significantly contributed to the development of robust CBFs using margin methods:
+Year	Title	Authors	Summary
+2024	Robust Control Barrier Functions using Uncertainty Estimation with Application to Mobile Robots
+Ersin Daş et al.	Proposes a safety-critical control design that integrates CBFs with an uncertainty estimator to handle matched and unmatched uncertainties, ensuring robust safety in nonlinear control affine systems. Demonstrated through simulations and experiments on mobile robots.
+2023	Robust Control Barrier Functions for Control Affine Systems with Time-Varying Parametric Uncertainties
+Tarun Pati, Sze Zheng Yong	Introduces robust CBFs for systems with time-varying parametric uncertainties, utilizing mixed-monotone decomposition and robust optimization to maintain linearity in control inputs, facilitating the design of quadratic program-based controllers that ensure safety under uncertain conditions.
+2021	Learning Robust Output Control Barrier Functions from Safe Expert Demonstrations
+Lars Lindemann et al.	Addresses learning safe output feedback control laws from partial observations of expert demonstrations by proposing robust output control barrier functions (ROCBFs) that account for system dynamics and state estimation uncertainties.
+2018	Robust Control Barrier Functions for Constrained Stabilization of Nonlinear Systems
+Milos Jankovic	Introduces the concept of Robust-CBFs that, when combined with existing Input-to-State Stable Control Lyapunov Functions (ISS-CLFs), produce controllers for constrained nonlinear systems with disturbances, ensuring robust safety and stability.
+2023	Verification and Synthesis of Robust Control Barrier Functions: Multilevel Polynomial Optimization and Semidefinite Relaxation
+Shucheng Kang et al.	Studies the problem of verification and synthesis of robust CBFs for control-affine polynomial systems with bounded additive uncertainty and convex polynomial constraints on the control, formulating it as multilevel polynomial optimization problems and providing semidefinite relaxation techniques for solutions.
+These papers represent significant advancements in the field of robust CBFs, addressing various aspects of safety and performance in the presence of uncertainties.
+
+Experimental Testbeds  
+To evaluate the proposed improvements, experiments will be conducted in the following testbeds:
+- Autonomous Driving Simulation (CARLA): To test ShieldNN in real-world driving scenarios, including unexpected hazards and environmental changes.
+- Robotic Manipulation (OpenAI Gym & MuJoCo): To assess safety filtering in robotic arms performing precise tasks in dynamic environments.
+- Cyber-Physical Systems (F1TENTH Autonomous Racing Platform): To analyze real-time safety interventions in high-speed autonomous decision-making.
+- Hardware Testbed (Embedded Control Systems): To evaluate computational efficiency and safety filtering in embedded processors used in safety-critical systems.
+
+By addressing the limitations of ShieldNN through hybrid safety mechanisms, computational optimizations, and robust data strategies, this research aims to advance safe RL applications for real-world deployment.
+
+References
+Ferlez, J., Elnaggar, M., Shoukry, Y., & Fleming, C. (2020). Shieldnn: A provably safe nn filter for unsafe nn controllers. arXiv preprint arXiv:2006.09564.
+https://arxiv.org/pdf/2006.09564
+
+M. Alshiekh, R. Bloem, R. Ehlers, B. K ̈onighofer, S. Niekum,
+and U. Topcu. (2017) Safe Reinforcement Learning via Shielding.
+[Online]. Available: http://arxiv.org/abs/1708.08611
+Topic: Neuro-symbolic + Shielding (Search “Neuro-symoblic+ temporal logic” or “Neuro-symoblic+ shielding” ):
+Wang, J., Chen, H., Sun, Z., & Kantaros, Y. (2023). Verified Compositional Neuro-Symbolic Control for Stochastic Systems with Temporal Logic Tasks. arXiv preprint arXiv:2311.10863.
+
+Innes, C., & Ramamoorthy, S. (2020). Elaborating on learned demonstrations with temporal logic specifications. arXiv preprint arXiv:2002.00784.
+
+Umili, E. (2023, September). Neurosymbolic integration of linear temporal logic in non symbolic domains. In European Conference on Multi-Agent Systems (pp. 521-527). Cham: Springer Nature Switzerland.
+
+Hashemi, N., Hoxha, B., Yamaguchi, T., Prokhorov, D., Fainekos, G., & Deshmukh, J. (2023, May). A neurosymbolic approach to the verification of temporal logic properties of learning-enabled control systems. In Proceedings of the ACM/IEEE 14th International Conference on Cyber-Physical Systems (with CPS-IoT Week 2023) (pp. 98-109).
+
+Sun, X., & Shoukry, Y. (2024). Neurosymbolic motion and task planning for linear temporal logic tasks. IEEE Transactions on Robotics.
+
+Yang, W. C., Marra, G., Rens, G., & De Raedt, L. (2023). Safe reinforcement learning via probabilistic logic shields. arXiv preprint arXiv:2303.03226.
+
+Anderson, G., Verma, A., Dillig, I., & Chaudhuri, S. (2020). Neurosymbolic reinforcement learning with formally verified exploration. Advances in neural information processing systems, 33, 6172-6183.
+
+Debot, D., Venturato, G., Marra, G., & De Raedt, L. (2024, November). Neurosymbolic Reinforcement Learning: Playing MiniHack With Probabilistic Logic Shields. In The 39th Annual AAAI Conference on Artificial Intelligence.  
+
+ 
+
+
+Topic: Different kinds of Temporal logic/Shielding
+Here is an updated version with APA citations at the end of each type:
+	1.	Rejection-Based Shielding:
+This approach involves a shield that monitors the agent’s proposed actions and rejects those that may lead to unsafe states. By intervening to block unsafe actions, the shield ensures that only safe actions are executed.
+(Alshiekh et al., 2017)
+Citation: Alshiekh, M., Bloem, R., Ehlers, R., Könighofer, B., Niekum, S., & Topcu, U. (2017). Safe reinforcement learning via shielding. arXiv preprint arXiv:1708.08611.
+	2.	Probabilistic Shielding:
+This method assesses the safety of actions based on probabilistic models, allowing for a certain level of risk tolerance. Actions are evaluated for their likelihood of leading to unsafe states, and decisions are made to balance safety with performance.
+(Wu et al., 2020)
+Citation: Wu, L., & Topcu, U. (2020). Probabilistic shielding for reinforcement learning. CONCUR 2020: 31st International Conference on Concurrency Theory, 171, 3.
+	3.	Probabilistic Logic Shielding:
+This technique integrates probabilistic logic programming with reinforcement learning to model safety constraints as differentiable functions. It enables seamless application to policy gradient algorithms, ensuring safety in continuous, end-to-end deep RL methods.
+(Yang et al., 2023)
+Citation: Yang, W. C., Marra, G., Rens, G., & De Raedt, L. (2023). Safe reinforcement learning via probabilistic logic shields. Proceedings of the 32nd International Joint Conference on Artificial Intelligence (IJCAI-23), 637.
+	4.	Online Shielding:
+The shield dynamically analyzes the safety of each available action during runtime. It computes the probability of not violating safety specifications within a certain number of steps when executing a particular action, and based on this probability and a given threshold, decides whether to block the action.
+(Jansen et al., 2022)
+Citation: Jansen, N., Pérez, M., & Wimmer, R. (2022). Online shielding for reinforcement learning with safety guarantees. International Journal on Software Tools for Technology Transfer, 24, 703–720.
+	5.	Hierarchical Shielding:
+This approach combines hierarchical shielding with self-adaptive methods, such as the MAPE-K loop, to ensure safety in reinforcement learning. It involves a shield that monitors the environment and uses strategies like graceful degradation and progressive enhancement to maintain safety.
+(Tang et al., 2022)
+Citation: Tang, Y., Wang, B., & Huang, H. (2022). Hierarchical shielding of deep reinforcement learning agents using self-adaptive safety monitoring. Proceedings of WCSE 2022 Spring.
+	6.	Factored Shielding:
+In multi-agent systems, factored shielding synthesizes multiple shields based on a factorization of the joint state space observed by all agents. Each shield monitors a subset of agents, ensuring safety without the need for a centralized shield, which enhances scalability.
+(Schwarzrock et al., 2021)
+Citation: Schwarzrock, A., Hassan, M., Mathewson, K. W., & Parker, L. E. (2021). Factored shielding: Scalable safe multi-agent reinforcement learning. Proceedings of the 20th International Conference on Autonomous Agents and Multiagent Systems (AAMAS 2021), 483.
+	7.	Verification-Guided Shielding:
+This novel approach integrates formal verification methods with shielding. It partitions the input domain into safe and unsafe regions using verification tools, allowing the shield to activate only in potentially unsafe regions, thereby reducing runtime overhead while preserving safety guarantees.
+(Lyu et al., 2024)
+Citation: Lyu, H., Wang, Z., & Topcu, U. (2024). Verification-guided shielding for safe reinforcement learning. arXiv preprint arXiv:2406.06507.
+Each type of shielding offers unique advantages, and their applicability depends on factors such as environment complexity, real-time decision requirements, and acceptable safety risks.
+
+
+
+
+
+
+
+
