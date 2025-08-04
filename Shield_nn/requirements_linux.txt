@@ -1,0 +1,40 @@
+# ShieldNN with Adaptive Margins - Linux Requirements
+# GPU-optimized installation for Linux systems with GPU
+
+# Core ML libraries (GPU versions)
+tensorflow-gpu==1.15.0
+torch==1.9.0+cu111
+torchvision==0.10.0+cu111
+torchaudio==0.9.0+cu111
+--find-links https://download.pytorch.org/whl/torch_stable.html
+
+# CARLA dependencies
+carla==0.9.5
+pygame==1.9.6
+gym==0.17.3
+
+# Neural network and ML
+onnx==1.8.1
+onnx-tf==1.8.0
+tensorflow-probability==0.7.0
+
+# Data processing
+numpy==1.19.5
+pandas==1.1.5
+scikit-image==0.16.2
+opencv-python==4.4.0.46
+
+# Visualization and plotting
+matplotlib==3.3.4
+seaborn==0.11.2
+
+# System utilities
+psutil==5.8.0
+tqdm==4.62.3
+
+# Development tools
+jupyter==1.0.0
+ipython==7.19.0
+
+# Optional: For headless training
+xvfb==1.0.0
